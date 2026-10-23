@@ -11,3 +11,15 @@ drawGraph(
   },
   canvas,
 );
+
+const form = document.getElementById("form") as HTMLFormElement;
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const formData = new FormData(form);
+  const _a = formData.get("a");
+  const _b = formData.get("b");
+  const _c = formData.get("c");
+  const _d = formData.get("d");
+});
