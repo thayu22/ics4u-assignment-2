@@ -18,8 +18,19 @@ form.addEventListener("submit", (event) => {
   event.preventDefault();
 
   const formData = new FormData(form);
-  const _a = formData.get("a");
-  const _b = formData.get("b");
-  const _c = formData.get("c");
-  const _d = formData.get("d");
+  const a = Number(formData.get("a"));
+  const b = Number(formData.get("b"));
+  const c = Number(formData.get("c"));
+  const d = Number(formData.get("d"));
+
+  const p = (3 * a * c - b * b) / (3 * a * a);
+  const q = (27 * a * a * d - 9 * a * b * c + 2 * b * b * b) / (27 * a * a * a);
 });
+
+// depressed form function
+// function (a: number, b:number, c:number, d:number) {
+//   let p: number = (3 * a * c - b * b) / (3 * a * a);
+//   let q: number = (27 * a * a * d - 9 * a * b * c + 2 * b * b * b) / (27 * a * a * a);
+
+//   return [p , q]
+// }
