@@ -47,3 +47,9 @@ function trignometry(p: number, q: number, a: number, b: number) {
   };
   return roots;
 }
+
+function cordano(p: number, q: number, a: number, b: number) {
+  const discriminant = disc(p, q);
+  const y = 3 * Math.sqrt(-q / 2 + Math.sqrt(discriminant)) + 3 * Math.sqrt(-q / 2 + Math.sqrt(discriminant));
+  const x = y - b / (3 * a);
+}
