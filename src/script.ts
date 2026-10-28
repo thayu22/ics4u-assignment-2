@@ -25,11 +25,25 @@ form.addEventListener("submit", (event) => {
 
   const p = (3 * a * c - b * b) / (3 * a * a);
   const q = (27 * a * a * d - 9 * a * b * c + 2 * b * b * b) / (27 * a * a * a);
+
+  const discriminant = disc(p, q);
+  rootFinder(discriminant);
+  
 });
 
 function disc(p: number, q: number) {
   const discriminant = (q / 2) * (q / 2) + (p / 3) * (p / 3) * (p / 3);
   return discriminant;
+}
+
+function rootFinder(discriminant: number) {
+  if (discriminant < 0) {
+
+  } else if (discriminant > 0) {
+
+  } else {
+
+  }
 }
 
 function trignometry(p: number, q: number, a: number, b: number) {
@@ -52,4 +66,8 @@ function cordano(p: number, q: number, a: number, b: number) {
   const discriminant = disc(p, q);
   const y = 3 * Math.sqrt(-q / 2 + Math.sqrt(discriminant)) + 3 * Math.sqrt(-q / 2 + Math.sqrt(discriminant));
   const x = y - b / (3 * a);
+  const roots = {
+    r1: { x: x, y: y},
+  };
+  return roots;
 }
