@@ -1,4 +1,5 @@
 import { drawGraph } from "@ics4u-assignment-02/utils";
+
 //import { Results } from "./types";
 
 const canvas = document.getElementById("graph") as HTMLCanvasElement;
@@ -23,7 +24,7 @@ function setText(id: string, value: string) {
 }
 
 // function setAnalysis ({answer: Results}) {
-  
+
 // }
 
 const form = document.getElementById("form") as HTMLFormElement;
@@ -39,8 +40,6 @@ form.addEventListener("submit", (event) => {
 
   const p = (3 * a * c - b * b) / (3 * a * a);
   const q = (27 * a * a * d - 9 * a * b * c + 2 * b * b * b) / (27 * a * a * a);
-
-   
 });
 
 function disc(p: number, q: number) {
@@ -65,25 +64,31 @@ function trigonometry(p: number, q: number, a: number, b: number) {
 }
 
 function cardano(p: number, q: number, a: number, b: number) {
-  const comOne = (-1 + Math.sqrt(-3)) / 2;
-  const comTwo = (-1 - Math.sqrt(-3)) / 2;
-  const u = Math.cbrt(-q / 2 + Math.sqrt(disc(p, q)));
-  const v = Math.cbrt(-q / 2 - Math.sqrt(disc(p, q)));
+  const discriminant = disc(p, q);
+  const inf = -b / (3 * a);
+  const u = Math.cbrt(-q / 2 + Math.sqrt(discriminant));
+  const v = Math.cbrt(-q / 2 - Math.sqrt(discriminant));
   const yOne = u + v;
-  const yTwo = u * comOne + v * comTwo;
-  const yThr = u * comTwo + v * comOne;
-  const xOne = yOne - b / (3 * a);
-  const xTwo = yTwo - b / (3 * a);
-  const xThr = yThr - b / (3 * a);
-  const roots = {
-    r1: { x: xOne, y: yOne },
-    r2: { x: xTwo, y: yTwo },
-    r3: { x: xThr, y: yThr },
-  };
-  return roots;
+  const xOne = yOne + inf;
+  if (discriminant > 0) {
+    const roots = {
+      r1: { x: xOne, y: yOne },
+    };
+    return roots;
+  } else {
+    if (p === 0 && q === 0) {
+      const roots = {
+        r1: { x: inf, y: 0 },
+        r2: { x: inf, y: 0 },
+        r3: { x: inf, y: 0 },
+      };
+      return roots;
+    } else if (p !== 0) {
+    }
+  }
 }
 
-function solveCubic (p: number, q: number, a: number, b: number) {
+function solveCubic(p: number, q: number, a: number, b: number) {
   const discriminant = disc(p, q);
 
   if (discriminant < 0) {
