@@ -56,9 +56,9 @@ function trigonometry(p: number, q: number, a: number, b: number) {
   const xTwo = yTwo - b / (3 * a);
   const xThr = yThr - b / (3 * a);
   const roots = {
-    r1: { x: xOne, y: yOne },
-    r2: { x: xTwo, y: yTwo },
-    r3: { x: xThr, y: yThr },
+    r1: { x: xOne, y: 0 },
+    r2: { x: xTwo, y: 0 },
+    r3: { x: xThr, y: 0 },
   };
   return roots;
 }
@@ -72,7 +72,7 @@ function cardano(p: number, q: number, a: number, b: number) {
   const xOne = yOne + inf;
   if (discriminant > 0) {
     const roots = {
-      r1: { x: xOne, y: yOne },
+      r1: { x: xOne, y: 0 },
     };
     return roots;
   } else {
@@ -84,6 +84,14 @@ function cardano(p: number, q: number, a: number, b: number) {
       };
       return roots;
     } else if (p !== 0) {
+      const rootTwo = -Math.cbrt(4 * q);
+      const rootOne = -(rootTwo / 2);
+      const roots = {
+        r1: { x: rootOne + inf, y: 0 },
+        r2: { x: rootOne + inf, y: 0 },
+        r3: { x: rootTwo + inf, y: 0 },
+      };
+      return roots;
     }
   }
 }
