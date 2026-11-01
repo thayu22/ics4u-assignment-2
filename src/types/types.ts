@@ -5,6 +5,12 @@ export type Coefficients = {
   d: number;
 };
 
+export type RootCoordinate = {
+  rootOne: Coordinate;
+  rootTwo: Coordinate;
+  rootThr: Coordinate;
+};
+
 export type Coordinate = {
   x: number | string;
   y: number | string;
