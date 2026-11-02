@@ -1,5 +1,5 @@
 import { drawGraph } from "@ics4u-assignment-02/utils";
-import type { Coefficients, Coordinate, FirstDev, Results, RootCoordinate } from "./types";
+import type { Results, RootCoordinate } from "./types";
 
 const canvas = document.getElementById("graph") as HTMLCanvasElement;
 
@@ -13,7 +13,7 @@ drawGraph(
   canvas,
 );
 
-function setText(id: string, value: string) {
+function setText(id: string, value: string | number) {
   const element = document.getElementById(id);
 
   if (!element) {
@@ -23,10 +23,10 @@ function setText(id: string, value: string) {
 }
 
 function setAnalysis(answer: Results) {
-  setText("p", String(answer.p));
-  setText("q", String(answer.q));
-  setText("discriminant", String(answer.discriminant));
-  setText("root-one", String(answer.r1));
+  setText("p", answer.p);
+  setText("q", answer.q);
+  setText("discriminant", answer.discriminant);
+  setText("root-one", String(`${answer.r1.x} | ${answer.r1.y}`));
   setText("root-two", String(answer.r2));
   setText("root-three", String(answer.r3));
   setText("minimum", String(answer.minimum));
@@ -40,7 +40,7 @@ function setAnalysis(answer: Results) {
 
 const form = document.getElementById("form") as HTMLFormElement;
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("input", (event) => {
   event.preventDefault();
 
   const formData = new FormData(form);
@@ -51,12 +51,12 @@ form.addEventListener("submit", (event) => {
 
   const p = (3 * a * c - b * b) / (3 * a * a);
   const q = (27 * a * a * d - 9 * a * b * c + 2 * b * b * b) / (27 * a * a * a);
-});
 
-function disc(p: number, q: number) {
   const discriminant = (q / 2) * (q / 2) + (p / 3) * (p / 3) * (p / 3);
-  return discriminant;
-}
+
+  const result = solveCubic(p, q, a, b, c, d, discriminant);
+  setAnalysis(result);
+});
 
 function trigonometry(p: number, q: number, a: number, b: number) {
   const theta = (1 / 3) * Math.acos(-q / 2 / Math.sqrt(-((p / 3) * (p / 3) * (p / 3))));
@@ -82,7 +82,9 @@ function cardano(p: number, q: number, a: number, b: number, discriminant: numbe
   const xOne = yOne + inf;
   if (discriminant > 0) {
     const roots = {
-      r1: { x: xOne, y: 0 },
+      rootOne: { x: xOne, y: 0 },
+      rootThr: { x: "x: Imaginary", y: "y: Imaginary" },
+      rootTwo: { x: "x: Imaginary", y: "y: Imaginary" },
     };
     return roots;
   } else {
@@ -102,6 +104,13 @@ function cardano(p: number, q: number, a: number, b: number, discriminant: numbe
         rootTwo: { x: rootTwo + inf, y: 0 },
       };
       return roots;
+    } else {
+      const roots: RootCoordinate = {
+        rootOne: { x: "incorrect", y: "incorrect" },
+        rootThr: { x: "incorrect", y: "incorrect" },
+        rootTwo: { x: "incorrect", y: "incorrect" },
+      };
+      return roots;
     }
   }
 }
@@ -111,23 +120,22 @@ function firstDer(a: number, b: number, c: number) {
     aCoef: a * 3,
     bCoef: b * 2,
     cCoef: c,
-  }
+  };
   return firstDeriv;
 }
 
-function solveCubic(pValue: number, qValue: number, a: number, b: number, c: number, d: number, disc: number) {
-  const discriminant = disc(p, q);
+function solveCubic(pValue: number, qValue: number, a: number, b: number, c: number, d: number, discriminants: number) {
   const firDer = firstDer(a, b, c);
-  let rootFinal: RootFinal;
-  if (discriminant < 0) {
+  let rootFinal: RootCoordinate;
+  if (discriminants < 0) {
     rootFinal = trigonometry(pValue, qValue, a, b);
   } else {
-    rootFinal = cardano(pValue, qValue, a, b, disc);
+    rootFinal = cardano(pValue, qValue, a, b, discriminants);
   }
 
   const { rootOne, rootTwo, rootThr } = rootFinal;
   const { aCoef, bCoef, cCoef } = firDer;
-  const firstDisc = (2*b)*(2*b)-4*3*a*c;
+  const firstDisc = 2 * b * (2 * b) - 4 * 3 * a * c;
 
   let xValueOne: number;
   let xValueTwo: number;
@@ -135,30 +143,78 @@ function solveCubic(pValue: number, qValue: number, a: number, b: number, c: num
   let yValueTwo: number;
 
   if (firstDisc > 0) {
-    xValueOne = (-2*b + Math.sqrt(firstDisc)) / (a * 6);
-    xValueTwo = (-2*b - Math.sqrt(firstDisc)) / (a * 6);
+    xValueOne = (-2 * b + Math.sqrt(firstDisc)) / (a * 6);
+    xValueTwo = (-2 * b - Math.sqrt(firstDisc)) / (a * 6);
     yValueOne = a * xValueOne * xValueOne * xValueOne + b * xValueOne * xValueOne + c * xValueOne + d;
     yValueTwo = a * xValueTwo * xValueTwo * xValueTwo + b * xValueTwo * xValueTwo + c * xValueTwo + d;
   } else if (firstDisc === 0) {
-    xValueOne = (-2*b/ (a * 6));
-    xValueTwo = (-2*b/ (a * 6));
+    xValueOne = (-2 * b) / (a * 6);
+    xValueTwo = xValueOne;
+    yValueOne = a * xValueOne * xValueOne * xValueOne + b * xValueOne * xValueOne + c * xValueOne + d;
+    yValueTwo = yValueOne;
   } else {
     xValueOne = NaN;
     xValueTwo = NaN;
+    yValueOne = NaN;
+    yValueTwo = NaN;
   }
+  let status: string;
+
+  if (discriminants < 0) {
+    status = "3 Distinct Real Roots";
+  } else if (discriminants > 0) {
+    status = "1 Real root, 2 Complex Roots";
+  } else {
+    if (pValue === 0 && qValue === 0) {
+      status = "Triple Real Roots";
+    } else if (pValue === 0) {
+      status = "Double Real Roots, Single Real Root";
+    } else {
+      status = "N/A";
+    }
+  }
+  const secondDerivativeOne = 6 * a * xValueOne + 2 * b;
+  const secondDerivativeTwo = 6 * a * xValueTwo + 2 * b;
 
   const result: Results = {
-    discriminant: disc,
-    equation:`${a}x³ ${b >= 0 ? "+" : ""} ${b}x² ${c >= 0 ? "+" : ""} ${c}x ${d >= 0 ? "+" : ""} ${d}`,
-    factored: `${a === -1 ? "-": a === 1 ? "" : a} (x ${rootOne.x < 0 ? "+": "-"} ${Math.abs(rootOne.x)}) (x ${rootTwo.x < 0 ? "+": "-"} ${Math.abs(rootTwo.x)}) (x ${rootThr.x < 0 ? "+": "-"} ${Math.abs(rootThr.x)})`,
-    firstDerivative: `${aCoef}x² ${bCoef > 0 ? "+" : ""}${bCoef === 0 ? "" : `${bCoef}x`} ${cCoef > 0 ? "+" : ""}${cCoef ===0 ? "" : cCoef}`,
-    maximum: ,
-    minimum: ,
+    discriminant: discriminants,
+    equation: `${a}x³ ${b >= 0 ? "+" : ""} ${b}x² ${c >= 0 ? "+" : ""} ${c}x ${d >= 0 ? "+" : ""} ${d}`,
+    factored: `${a === -1 ? "-" : a === 1 ? "" : a} (x ${Number(rootOne.x) < 0 ? "+" : "-"} ${Math.abs(Number(rootOne.x))}) (x ${Number(rootTwo.x) < 0 ? "+" : "-"} ${Math.abs(Number(rootTwo.x))}) (x ${Number(rootThr.x) < 0 ? "+" : "-"} ${Math.abs(Number(rootThr.x))})`,
+    firstDerivative: `${aCoef}x² ${bCoef > 0 ? "+" : ""}${bCoef === 0 ? "" : `${bCoef}x`} ${cCoef > 0 ? "+" : ""}${cCoef === 0 ? "" : cCoef}`,
+    maximum: { x: NaN, y: NaN },
+    minimum: { x: NaN, y: NaN },
     p: pValue,
     q: qValue,
-    r1: {x: rootOne.x, y: rootOne.y},
-    r2: {x: rootTwo.x, y: rootTwo.y},
-    r3: {x: rootThr.x, y: rootThr.y},
+    r1: { x: rootOne.x, y: rootOne.y },
+    r2: { x: rootTwo.x, y: rootTwo.y },
+    r3: { x: rootThr.x, y: rootThr.y },
+    roots: status,
     secondDerivative: `${aCoef === 0 ? "" : `${aCoef * 2}x`} ${bCoef > 0 ? "+" : ""}${bCoef === 0 ? "" : bCoef}`,
   };
+
+  if (secondDerivativeOne < 0) {
+    result.maximum = {
+      x: xValueOne,
+      y: yValueOne,
+    };
+  } else if (secondDerivativeOne > 0) {
+    result.minimum = {
+      x: xValueOne,
+      y: yValueOne,
+    };
+  }
+
+  if (secondDerivativeTwo < 0) {
+    result.maximum = {
+      x: xValueTwo,
+      y: yValueTwo,
+    };
+  } else if (secondDerivativeTwo > 0) {
+    result.minimum = {
+      x: xValueTwo,
+      y: yValueTwo,
+    };
+  }
+
+  return result;
 }
