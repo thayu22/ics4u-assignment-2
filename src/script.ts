@@ -3,6 +3,16 @@ import type { Coefficients, History, Results, RootCoordinate } from "./types";
 
 const canvas = document.getElementById("graph") as HTMLCanvasElement;
 
+drawGraph(
+  { a: 0, b: 0, c: 0, d: 0 },
+  {
+    r1: { x: 0, y: 0 },
+    r2: { x: 0, y: 0 },
+    r3: { x: 0, y: 0 },
+  },
+  canvas,
+);
+
 const round = (n: number | string) => (typeof n === "number" ? n.toFixed(5) : n);
 
 function setText(id: string, value: string | number) {
