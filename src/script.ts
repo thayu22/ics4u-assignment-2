@@ -1,17 +1,9 @@
 import { drawGraph } from "@ics4u-assignment-02/utils";
-import type { Results, RootCoordinate } from "./types";
+import type { Coefficients, History, Results, RootCoordinate } from "./types";
 
 const canvas = document.getElementById("graph") as HTMLCanvasElement;
 
-drawGraph(
-  { a: 0, b: 0, c: 0, d: 0 },
-  {
-    r1: { x: 0, y: 0 },
-    r2: { x: 0, y: 0 },
-    r3: { x: 0, y: 0 },
-  },
-  canvas,
-);
+const round = (n: number | string) => (typeof n === "number" ? n.toFixed(5) : n);
 
 function setText(id: string, value: string | number) {
   const element = document.getElementById(id);
@@ -23,14 +15,14 @@ function setText(id: string, value: string | number) {
 }
 
 function setAnalysis(answer: Results) {
-  setText("p", answer.p);
-  setText("q", answer.q);
-  setText("discriminant", answer.discriminant);
-  setText("root-one", String(`${answer.r1.x} | ${answer.r1.y}`));
-  setText("root-two", String(answer.r2));
-  setText("root-three", String(answer.r3));
-  setText("minimum", String(answer.minimum));
-  setText("maximum", String(answer.maximum));
+  setText("p", round(answer.p));
+  setText("q", round(answer.q));
+  setText("discriminant", round(answer.discriminant));
+  setText("root-one", String(`${round(answer.r1.x)} | ${round(answer.r1.y)}`));
+  setText("root-two", String(`${round(answer.r2.x)} | ${round(answer.r2.y)}`));
+  setText("root-three", String(`${round(answer.r3.x)} | ${round(answer.r3.y)}`));
+  setText("minimum", String(`${round(answer.minimum.x)} | ${round(answer.minimum.y)}`));
+  setText("maximum", String(`${round(answer.maximum.x)} | ${round(answer.maximum.y)}`));
   setText("equation", answer.equation);
   setText("first-derivative", answer.firstDerivative);
   setText("second-derivative", answer.secondDerivative);
@@ -39,6 +31,59 @@ function setAnalysis(answer: Results) {
 }
 
 const form = document.getElementById("form") as HTMLFormElement;
+const addList = document.getElementById("history");
+const history: History = [];
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const formData = new FormData(form);
+  const a = Number(formData.get("a"));
+  const b = Number(formData.get("b"));
+  const c = Number(formData.get("c"));
+  const d = Number(formData.get("d"));
+  let checker: boolean = false;
+  const coefficient: Coefficients = {
+    a: a,
+    b: b,
+    c: c,
+    d: d,
+  };
+
+  for (let i = 0; i < history.length; i++) {
+    if (
+      history[i].a === coefficient.a &&
+      history[i].b === coefficient.b &&
+      history[i].c === coefficient.c &&
+      history[i].d === coefficient.d
+    ) {
+      checker = true;
+      break;
+    }
+  }
+
+  if (!checker) {
+    history.push(coefficient);
+    addItem(coefficient);
+  }
+});
+
+function addItem(coefficient: Coefficients) {
+  const li = document.createElement("li");
+
+  li.className = "flex font-mono gap-2";
+  li.innerHTML = `
+    <div class="flex-1 grid grid-cols-4 text-center border text-sm border-slate-700 bg-slate-800/40 rounded-xl py-3 hover:bg-slate-800/70">
+      <span>${coefficient.a}</span><span>${coefficient.b}</span><span>${coefficient.c}</span><span>${coefficient.d}</span>
+    </div>
+    <div class="py-2 group text-center w-20 border rounded-lg border-red-500/60 bg-red-500/10 hover:bg-red-500/30 ">
+      <button class="text-xs text-center font-medium text-center text-red-400 group-hover:text-red-300">Delete</button>
+    </div>
+  `;
+  if (addList instanceof HTMLUListElement) {
+    addList.appendChild(li);
+  }
+}
 
 form.addEventListener("input", (event) => {
   event.preventDefault();
@@ -55,6 +100,15 @@ form.addEventListener("input", (event) => {
   const discriminant = (q / 2) * (q / 2) + (p / 3) * (p / 3) * (p / 3);
 
   const result = solveCubic(p, q, a, b, c, d, discriminant);
+  drawGraph(
+    { a: a, b: b, c: c, d: d },
+    {
+      r1: { x: result.r1.x, y: result.r1.y },
+      r2: { x: result.r2.x, y: result.r2.y },
+      r3: { x: result.r3.x, y: result.r3.y },
+    },
+    canvas,
+  );
   setAnalysis(result);
 });
 
@@ -179,17 +233,17 @@ function solveCubic(pValue: number, qValue: number, a: number, b: number, c: num
   const result: Results = {
     discriminant: discriminants,
     equation: `${a}x³ ${b >= 0 ? "+" : ""} ${b}x² ${c >= 0 ? "+" : ""} ${c}x ${d >= 0 ? "+" : ""} ${d}`,
-    factored: `${a === -1 ? "-" : a === 1 ? "" : a} (x ${Number(rootOne.x) < 0 ? "+" : "-"} ${Math.abs(Number(rootOne.x))}) (x ${Number(rootTwo.x) < 0 ? "+" : "-"} ${Math.abs(Number(rootTwo.x))}) (x ${Number(rootThr.x) < 0 ? "+" : "-"} ${Math.abs(Number(rootThr.x))})`,
-    firstDerivative: `${aCoef}x² ${bCoef > 0 ? "+" : ""}${bCoef === 0 ? "" : `${bCoef}x`} ${cCoef > 0 ? "+" : ""}${cCoef === 0 ? "" : cCoef}`,
-    maximum: { x: NaN, y: NaN },
-    minimum: { x: NaN, y: NaN },
+    factored: `${!Number.isNaN(rootTwo.x) || !Number.isNaN(rootThr.x) ? `${a === -1 ? "-" : a === 1 ? "" : a} (x ${(Number(rootOne.x)) < 0 ? "+" : "-"} ${Math.abs(Number(round(rootOne.x)))}) ${typeof rootTwo.x === "number" && !Number.isNaN(rootTwo.x) ? `(x ${rootTwo.x < 0 ? "+" : "-"} ${Math.abs(Number(round(rootTwo.x)))})` : ""} ${typeof rootThr.x === "number" && !Number.isNaN(rootThr.x) ? `(x ${rootThr.x < 0 ? "+" : "-"} ${Math.abs(Number(round(rootThr.x)))})` : ""}` : `No real factorization`}`,
+    firstDerivative: `${aCoef}x² ${bCoef > 0 ? "+" : ""} ${bCoef === 0 ? "" : `${bCoef}x`} ${cCoef > 0 ? "+" : ""} ${cCoef === 0 ? "" : cCoef}`,
+    maximum: { x: "x: N/A", y: "y: N/A" },
+    minimum: { x: "x: N/A", y: "y: N/A" },
     p: pValue,
     q: qValue,
     r1: { x: rootOne.x, y: rootOne.y },
     r2: { x: rootTwo.x, y: rootTwo.y },
     r3: { x: rootThr.x, y: rootThr.y },
     roots: status,
-    secondDerivative: `${aCoef === 0 ? "" : `${aCoef * 2}x`} ${bCoef > 0 ? "+" : ""}${bCoef === 0 ? "" : bCoef}`,
+    secondDerivative: `${aCoef === 0 ? "" : `${aCoef * 2}x`} ${bCoef > 0 ? "+" : ""} ${bCoef === 0 ? "" : bCoef}`,
   };
 
   if (secondDerivativeOne < 0) {
