@@ -83,11 +83,11 @@ function addItem(coefficient: Coefficients) {
 
   li.className = "flex font-mono gap-2";
   li.innerHTML = `
-    <div class="flex-1 grid grid-cols-4 text-center border text-sm border-slate-700 bg-slate-800/40 rounded-xl py-3 hover:bg-slate-800/70">
+    <div class="flex-1 grid grid-cols-4 text-center border text-sm border-slate-700 bg-slate-800/40 rounded-xl py-3 hover:bg-slate-800/70 text-white">
       <span>${coefficient.a}</span><span>${coefficient.b}</span><span>${coefficient.c}</span><span>${coefficient.d}</span>
     </div>
     <div class="py-2 group text-center w-20 border rounded-lg border-red-500/60 bg-red-500/10 hover:bg-red-500/30 ">
-      <button class="text-xs text-center font-medium text-center text-red-400 group-hover:text-red-300">Delete</button>
+      <button class="text-xs font-medium text-center text-red-400 group-hover:text-red-300">Delete</button>
     </div>
   `;
   if (addList instanceof HTMLUListElement) {
