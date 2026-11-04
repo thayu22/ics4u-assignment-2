@@ -1,0 +1,1 @@
+export const round = (n: number | string) => (typeof n === "number" ? n.toFixed(5) : n);

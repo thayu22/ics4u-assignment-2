@@ -1,4 +1,4 @@
-import { drawGraph } from "@ics4u-assignment-02/utils";
+import { drawGraph, round, setText } from "@ics4u-assignment-02/utils";
 import type { Coefficients, History, Results, RootCoordinate } from "./types";
 
 const canvas = document.getElementById("graph") as HTMLCanvasElement;
@@ -12,17 +12,6 @@ drawGraph(
   },
   canvas,
 );
-
-const round = (n: number | string) => (typeof n === "number" ? n.toFixed(5) : n);
-
-function setText(id: string, value: string | number) {
-  const element = document.getElementById(id);
-
-  if (!element) {
-    return;
-  }
-  element.innerText = String(value);
-}
 
 function setAnalysis(answer: Results) {
   setText("p", round(answer.p));
@@ -83,10 +72,13 @@ function addItem(coefficient: Coefficients) {
 
   li.className = "flex font-mono gap-2";
   li.innerHTML = `
-    <div class="flex-1 grid grid-cols-4 text-center border text-sm border-slate-700 bg-slate-800/40 rounded-xl py-3 hover:bg-slate-800/70 text-white">
-      <span>${coefficient.a}</span><span>${coefficient.b}</span><span>${coefficient.c}</span><span>${coefficient.d}</span>
+    <div class="add-value flex-1 grid grid-cols-4 text-center border text-sm border-slate-700 bg-slate-800/40 rounded-xl py-3 hover:bg-slate-800/70 text-white">
+      <span>${coefficient.a}</span>
+      <span>${coefficient.b}</span>
+      <span>${coefficient.c}</span>
+      <span>${coefficient.d}</span>
     </div>
-    <div class="py-2 group text-center w-20 border rounded-lg border-red-500/60 bg-red-500/10 hover:bg-red-500/30 ">
+    <div class="delete-button py-3 group text-center w-20 border rounded-lg border-red-500/60 bg-red-500/10 hover:bg-red-500/30 ">
       <button class="text-xs font-medium text-center text-red-400 group-hover:text-red-300">Delete</button>
     </div>
   `;
@@ -94,6 +86,26 @@ function addItem(coefficient: Coefficients) {
     addList.appendChild(li);
   }
 }
+
+addList?.addEventListener("click", (e) => {
+  const target = e.target as HTMLElement;
+
+  if (target.classList.contains("delete-button")) {
+    target.closest("li")?.remove();
+  }
+});
+
+addList?.addEventListener("click", (e) => {
+  const target = e.target as HTMLElement;
+
+  if (target.classList.contains("add-value")) {
+    const spans = document.querySelectorAll(".add-value");
+    (document.getElementById("a") as HTMLInputElement).value = spans[0].textContent;
+    (document.getElementById("b") as HTMLInputElement).value = spans[1].textContent;
+    (document.getElementById("c") as HTMLInputElement).value = spans[2].textContent;
+    (document.getElementById("d") as HTMLInputElement).value = spans[3].textContent;
+  }
+});
 
 form.addEventListener("input", (event) => {
   event.preventDefault();
