@@ -1,7 +1,10 @@
-import { drawGraph, round, setText } from "@ics4u-assignment-02/utils";
+import { cardano, drawGraph, firstDer, round, setText, trigonometry } from "@ics4u-assignment-02/utils";
 import type { Coefficients, History, Results, RootCoordinate } from "./types";
 
 const canvas = document.getElementById("graph") as HTMLCanvasElement;
+const form = document.getElementById("form") as HTMLFormElement;
+const addList = document.getElementById("history") as HTMLDivElement;
+const history: History = [];
 
 drawGraph(
   { a: 0, b: 0, c: 0, d: 0 },
@@ -29,44 +32,6 @@ function setAnalysis(answer: Results) {
   setText("factored", answer.factored);
 }
 
-const form = document.getElementById("form") as HTMLFormElement;
-const addList = document.getElementById("history");
-const history: History = [];
-
-form.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const formData = new FormData(form);
-  const a = Number(formData.get("a"));
-  const b = Number(formData.get("b"));
-  const c = Number(formData.get("c"));
-  const d = Number(formData.get("d"));
-  let checker: boolean = false;
-  const coefficient: Coefficients = {
-    a: a,
-    b: b,
-    c: c,
-    d: d,
-  };
-
-  for (let i = 0; i < history.length; i++) {
-    if (
-      history[i].a === coefficient.a &&
-      history[i].b === coefficient.b &&
-      history[i].c === coefficient.c &&
-      history[i].d === coefficient.d
-    ) {
-      checker = true;
-      break;
-    }
-  }
-
-  if (!checker) {
-    history.push(coefficient);
-    addItem(coefficient);
-  }
-});
-
 function addItem(coefficient: Coefficients) {
   const li = document.createElement("li");
 
@@ -85,119 +50,6 @@ function addItem(coefficient: Coefficients) {
   if (addList instanceof HTMLUListElement) {
     addList.appendChild(li);
   }
-}
-
-addList?.addEventListener("click", (e) => {
-  const target = e.target as HTMLElement;
-
-  if (target.classList.contains("delete-button")) {
-    target.closest("li")?.remove();
-  }
-});
-
-addList?.addEventListener("click", (e) => {
-  const target = e.target as HTMLElement;
-
-  if (target.classList.contains("add-value")) {
-    const spans = document.querySelectorAll(".add-value");
-    (document.getElementById("a") as HTMLInputElement).value = spans[0].textContent;
-    (document.getElementById("b") as HTMLInputElement).value = spans[1].textContent;
-    (document.getElementById("c") as HTMLInputElement).value = spans[2].textContent;
-    (document.getElementById("d") as HTMLInputElement).value = spans[3].textContent;
-  }
-});
-
-form.addEventListener("input", (event) => {
-  event.preventDefault();
-
-  const formData = new FormData(form);
-  const a = Number(formData.get("a"));
-  const b = Number(formData.get("b"));
-  const c = Number(formData.get("c"));
-  const d = Number(formData.get("d"));
-
-  const p = (3 * a * c - b * b) / (3 * a * a);
-  const q = (27 * a * a * d - 9 * a * b * c + 2 * b * b * b) / (27 * a * a * a);
-
-  const discriminant = (q / 2) * (q / 2) + (p / 3) * (p / 3) * (p / 3);
-
-  const result = solveCubic(p, q, a, b, c, d, discriminant);
-  drawGraph(
-    { a: a, b: b, c: c, d: d },
-    {
-      r1: { x: result.r1.x, y: result.r1.y },
-      r2: { x: result.r2.x, y: result.r2.y },
-      r3: { x: result.r3.x, y: result.r3.y },
-    },
-    canvas,
-  );
-  setAnalysis(result);
-});
-
-function trigonometry(p: number, q: number, a: number, b: number) {
-  const theta = (1 / 3) * Math.acos(-q / 2 / Math.sqrt(-((p / 3) * (p / 3) * (p / 3))));
-  const yOne = 2 * Math.sqrt(-p / 3) * Math.cos(theta);
-  const yTwo = 2 * Math.sqrt(-p / 3) * Math.cos(theta + (2 * Math.PI) / 3);
-  const yThr = 2 * Math.sqrt(-p / 3) * Math.cos(theta + (4 * Math.PI) / 3);
-  const xOne = yOne - b / (3 * a);
-  const xTwo = yTwo - b / (3 * a);
-  const xThr = yThr - b / (3 * a);
-  const roots: RootCoordinate = {
-    rootOne: { x: xOne, y: 0 },
-    rootThr: { x: xThr, y: 0 },
-    rootTwo: { x: xTwo, y: 0 },
-  };
-  return roots;
-}
-
-function cardano(p: number, q: number, a: number, b: number, discriminant: number) {
-  const inf = -b / (3 * a);
-  const u = Math.cbrt(-q / 2 + Math.sqrt(discriminant));
-  const v = Math.cbrt(-q / 2 - Math.sqrt(discriminant));
-  const yOne = u + v;
-  const xOne = yOne + inf;
-  if (discriminant > 0) {
-    const roots = {
-      rootOne: { x: xOne, y: 0 },
-      rootThr: { x: "x: Imaginary", y: "y: Imaginary" },
-      rootTwo: { x: "x: Imaginary", y: "y: Imaginary" },
-    };
-    return roots;
-  } else {
-    if (p === 0 && q === 0) {
-      const roots: RootCoordinate = {
-        rootOne: { x: inf, y: 0 },
-        rootThr: { x: inf, y: 0 },
-        rootTwo: { x: inf, y: 0 },
-      };
-      return roots;
-    } else if (p !== 0) {
-      const rootTwo = -Math.cbrt(4 * q);
-      const rootOne = -(rootTwo / 2);
-      const roots: RootCoordinate = {
-        rootOne: { x: rootOne + inf, y: 0 },
-        rootThr: { x: rootOne + inf, y: 0 },
-        rootTwo: { x: rootTwo + inf, y: 0 },
-      };
-      return roots;
-    } else {
-      const roots: RootCoordinate = {
-        rootOne: { x: "incorrect", y: "incorrect" },
-        rootThr: { x: "incorrect", y: "incorrect" },
-        rootTwo: { x: "incorrect", y: "incorrect" },
-      };
-      return roots;
-    }
-  }
-}
-
-function firstDer(a: number, b: number, c: number) {
-  const firstDeriv = {
-    aCoef: a * 3,
-    bCoef: b * 2,
-    cCoef: c,
-  };
-  return firstDeriv;
 }
 
 function solveCubic(pValue: number, qValue: number, a: number, b: number, c: number, d: number, discriminants: number) {
@@ -294,3 +146,84 @@ function solveCubic(pValue: number, qValue: number, a: number, b: number, c: num
 
   return result;
 }
+
+form.addEventListener("input", (event) => {
+  event.preventDefault();
+
+  const formData = new FormData(form);
+  const a = Number(formData.get("a"));
+  const b = Number(formData.get("b"));
+  const c = Number(formData.get("c"));
+  const d = Number(formData.get("d"));
+
+  const p = (3 * a * c - b * b) / (3 * a * a);
+  const q = (27 * a * a * d - 9 * a * b * c + 2 * b * b * b) / (27 * a * a * a);
+
+  const discriminant = (q / 2) * (q / 2) + (p / 3) * (p / 3) * (p / 3);
+
+  const result = solveCubic(p, q, a, b, c, d, discriminant);
+  drawGraph(
+    { a: a, b: b, c: c, d: d },
+    {
+      r1: { x: result.r1.x, y: result.r1.y },
+      r2: { x: result.r2.x, y: result.r2.y },
+      r3: { x: result.r3.x, y: result.r3.y },
+    },
+    canvas,
+  );
+  setAnalysis(result);
+});
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const formData = new FormData(form);
+  const a = Number(formData.get("a"));
+  const b = Number(formData.get("b"));
+  const c = Number(formData.get("c"));
+  const d = Number(formData.get("d"));
+  let checker: boolean = false;
+  const coefficient: Coefficients = {
+    a: a,
+    b: b,
+    c: c,
+    d: d,
+  };
+
+  for (let i = 0; i < history.length; i++) {
+    if (
+      history[i].a === coefficient.a &&
+      history[i].b === coefficient.b &&
+      history[i].c === coefficient.c &&
+      history[i].d === coefficient.d
+    ) {
+      checker = true;
+      break;
+    }
+  }
+
+  if (!checker) {
+    history.push(coefficient);
+    addItem(coefficient);
+  }
+});
+
+addList?.addEventListener("click", (e) => {
+  const target = e.target as HTMLElement;
+
+  if (target.classList.contains("delete-button")) {
+    target.closest("li")?.remove();
+  }
+});
+
+addList?.addEventListener("click", (e) => {
+  const target = e.target as HTMLElement;
+
+  if (target.classList.contains("add-value")) {
+    const spans = document.querySelectorAll(".add-value");
+    (document.getElementById("a") as HTMLInputElement).value = spans[0].textContent;
+    (document.getElementById("b") as HTMLInputElement).value = spans[1].textContent;
+    (document.getElementById("c") as HTMLInputElement).value = spans[2].textContent;
+    (document.getElementById("d") as HTMLInputElement).value = spans[3].textContent;
+  }
+});
